@@ -30,6 +30,7 @@ class Crawler:
     def __crawl(self, url):
         if url in self.__visited:
             return None
+        print(f"Crawling: {url}")
 
         self.__visited.add(url)
 
