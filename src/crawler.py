@@ -4,7 +4,8 @@ import time
 from urllib.parse import urljoin, urlparse
 
 class Crawler:
-    __visited = set() 
+    """Breadth-first crawler limited to the seed domain."""
+    __visited = set()
     __queue = []
 
     def __init__(self, url, politeness_delay):
@@ -16,6 +17,7 @@ class Crawler:
     def crawl(self):
         self.__queue.append(self.start_url)
 
+        # Process URLs in FIFO order to avoid deep recursion.
         while len(self.__queue) > 0:
             url = self.__queue.pop(0)
             result = self.__crawl(url)

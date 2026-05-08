@@ -18,12 +18,14 @@ class Indexer:
 
 	def add_document(self, url, text):
 		for position, term in enumerate(self._tokenize(text)):
+			# Store positional postings for phrase matching later.
 			urls = self._index[term]
 			if url not in urls:
 				urls[url] = []
 			urls[url].append(position)
 
 	def get_index(self):
+		# Return a plain dict for JSON serialization.
 		return {term: dict(urls) for term, urls in self._index.items()}
 
 	@staticmethod

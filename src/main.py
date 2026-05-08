@@ -46,15 +46,18 @@ def print_index(word):
 
 if __name__ == "__main__":
    seed_url = "https://quotes.toscrape.com/" 
+    # In-memory index is loaded explicitly via the `load` command.
    index = {}
    
    while True:
+        # Commands are space-delimited; `search` consumes the rest of the line.
       command = input("").split()
 
       match command[0]:
         case "build":
             build(seed_url)
         case "load":
+            # Refresh the in-memory index from disk.
             index = load_index()
         case "search":
             if not index:
