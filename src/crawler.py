@@ -11,18 +11,21 @@ class Crawler:
         self.start_url = url
         self.politeness_delay = politeness_delay
         self._base_netloc = urlparse(url).netloc
+        self.__pages = {}
 
     def crawl(self):
-       self.__qeueue.append(self.start_url) 
-       
-       while len(self.__queue) > 0:
-           url = self.__qeueue.pop(0)
-           result = self.__crawl(url)
+        self.__queue.append(self.start_url)
 
-           if result is not None:
-               for link in result["links"]:
-                   if link not in self.__visited:
-                       self.__qeueue.append(link)
+        while len(self.__queue) > 0:
+            url = self.__queue.pop(0)
+            result = self.__crawl(url)
+
+            if result is not None:
+                for link in result["links"]:
+                    if link not in self.__visited:
+                        self.__queue.append(link)
+
+        return dict(self.__pages)
 
     def __crawl(self, url):
         if url in self.__visited:
@@ -39,6 +42,7 @@ class Crawler:
         soup = BeautifulSoup(response.text, "html.parser")
 
         text = soup.get_text(" ", strip=True)
+        self.__pages[url] = text
         links = []
         for anchor in soup.find_all("a", href=True):
             href = anchor.get("href")

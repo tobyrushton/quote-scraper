@@ -23,6 +23,7 @@ def _reset_crawler_state():
 	# Reset class-level state between tests.
 	Crawler._Crawler__visited = set()
 	Crawler._Crawler__queue = []
+	Crawler._Crawler__pages = {}
 
 
 class TestCrawler(unittest.TestCase):
@@ -153,6 +154,42 @@ class TestCrawler(unittest.TestCase):
 			result = crawler._Crawler__crawl("https://example.com/start")
 
 		self.assertEqual(result["links"], ["https://example.com/inside"])
+
+	def test_crawl_returns_pages_dict(self):
+		_reset_crawler_state()
+		pages = {
+			"https://example.com/root": """
+			<html>
+			  <body>
+				<p>Root Page</p>
+				<a href="/child">Child</a>
+			  </body>
+			</html>
+			""",
+			"https://example.com/child": """
+			<html>
+			  <body>
+				<p>Child Page</p>
+			  </body>
+			</html>
+			""",
+		}
+
+		def fake_get(url, timeout=10):
+			return FakeResponse(pages[url])
+
+		with patch("src.crawler.requests.get", side_effect=fake_get) as mock_get:
+			crawler = Crawler("https://example.com/root", politeness_delay=0)
+			result = crawler.crawl()
+
+		self.assertEqual(
+			result,
+			{
+				"https://example.com/root": "Root Page Child",
+				"https://example.com/child": "Child Page",
+			},
+		)
+		self.assertEqual(mock_get.call_count, 2)
 
 
 if __name__ == "__main__":
