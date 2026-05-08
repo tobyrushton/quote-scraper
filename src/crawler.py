@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import time
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 class Crawler:
     __visited = set() 
@@ -10,6 +10,7 @@ class Crawler:
     def __init__(self, url, politeness_delay):
         self.start_url = url
         self.politeness_delay = politeness_delay
+        self._base_netloc = urlparse(url).netloc
 
     def crawl(self):
        self.__qeueue.append(self.start_url) 
@@ -44,7 +45,12 @@ class Crawler:
             if not href:
                 continue
 
-            links.append(urljoin(url, href))
+            # Make the URL absolute and ensure it's within the same domain
+            absolute = urljoin(url, href)
+            if urlparse(absolute).netloc != self._base_netloc:
+                continue
+
+            links.append(absolute)
 
         return {
             "url": url,
