@@ -135,6 +135,25 @@ class TestCrawler(unittest.TestCase):
 		self.assertEqual(result_c["links"], [])
 		self.assertEqual(mock_get.call_count, 3)
 
+	def test_crawl_filters_foreign_links(self):
+		_reset_crawler_state()
+		html = """
+		<html>
+		  <body>
+			<p>Local</p>
+			<a href="/inside">Inside</a>
+			<a href="https://other.example.com/out">Outside</a>
+		  </body>
+		</html>
+		"""
+
+		with patch("src.crawler.requests.get") as mock_get:
+			mock_get.return_value = FakeResponse(html)
+			crawler = Crawler("https://example.com/start", politeness_delay=0)
+			result = crawler._Crawler__crawl("https://example.com/start")
+
+		self.assertEqual(result["links"], ["https://example.com/inside"])
+
 
 if __name__ == "__main__":
 	unittest.main()
